@@ -42,7 +42,7 @@ def get_binance_info():
         asset = info["base_currency"]["value"]
         if info["margin"]["value"] != "usd":
             continue
-        oi_vol_24h.append((asset, round(info["open_interest"]["notional"] / info["volume24h"]["notional"], 2)))
+        oi_vol_24h.append((asset, round(info["open_interest"]["value"] / info["volume24h"]["value"], 2)))
         vol_24h.append((asset, round(info["volume24h"]["value"], 0)))
 
     return oi_vol_24h, vol_24h
