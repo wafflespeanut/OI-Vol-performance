@@ -54,16 +54,18 @@ providers = {
 }
 
 
-def post_message(cex, data):
+def post_message(cex, data, post_wh):
     max_asset_len, max_oi_len, max_vol_len = 0, 0, 0
     for (oi_a, oi_v, vol_a, vol_v) in data:
         max_asset_len = max(max_asset_len, len(oi_a) + 1)
         max_oi_len = max(max_oi_len, len(oi_v) + 1)
         max_vol_len = max(max_vol_len, len(vol_v) + 1)
 
-    def _post(content):
+    def _post(content, post_wh):
         if not WH_URL:
             print(content)
+            return
+        if not post_wh:
             return
         try:
             resp = requests.post(WH_URL, json={"content": content})
@@ -80,13 +82,13 @@ def post_message(cex, data):
             text = f"**{cex}:**\n```\n"
         text += f"{oi_a:<{max_asset_len}}{oi_v:<{max_oi_len}}| {vol_a:<{max_asset_len}}{vol_v:<{max_vol_len}}".rstrip() + "\n"
         if (i + 1) % 50 == 0:
-            _post(text + "\n```")
+            _post(text + "\n```", post_wh)
             text = "```\n"
     if len(text) > 10:
-        _post(text + "\n```")
+        _post(text + "\n```", post_wh)
 
 
-def append_cex_data(now, cex, aggr):
+def append_cex_data(now, cex, aggr, post_msg):
     ranks = {}
     ranks.setdefault("assets", [])
     current_json = os.path.join(out_dir, f"{now.strftime('%Y-%m-%d')}-{cex.lower()}-rank.json")
@@ -121,14 +123,21 @@ def append_cex_data(now, cex, aggr):
 
     with open(current_json, 'w') as fd:
         json.dump(ranks, fd)
-    post_message(cex, data)
+    post_message(cex, data, post_msg)
+
+
+prev_hour = datetime.utcnow().hour
 
 
 while True:
     now = datetime.utcnow()
+    current_hour = now.hour
+    hour_changed = current_hour != prev_hour
+    if hour_changed:
+        prev_hour = current_hour
     for cex, aggr in providers.items():
         try:
-            append_cex_data(now, cex, aggr)
+            append_cex_data(now, cex, aggr, hour_changed)
             time.sleep(1)
         except Exception as err:
             print(f"Error aggregating data: {err}")
