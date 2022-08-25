@@ -34,7 +34,7 @@ def get_ftx_info():
 
 def get_binance_info():
     oi_vol_24h, vol_24h = [], []
-    resp = requests.post("https://api.laevitas.ch/graphql", json={
+    resp = requests.post("https://be.laevitas.ch/graphql", json={
         "query": "{,getAltsDerivsPerpetual:getAltsDerivsPerpetual(,market:\"BINANCE\",change:\"24\")}",
     }).json()
 
