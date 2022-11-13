@@ -20,6 +20,8 @@
     <table>
         <tr>
             <div style="text-align:center">
+                <input type="checkbox" id="filter">
+                <label for="filter"> Union</label>
                 <button id="prev">Prev</button>
                 <button id="cex"></button>
                 <button id="next">Next</button>
@@ -31,16 +33,18 @@
         </tr>
     </table>
     <script>
-        const TOP_N = 20;
+        const TOP_N = 40;
         let response, u1, u2;
         const fmtDate = uPlot.fmtDate("{HH}:{mm}");
         const tzDate = (ts) => uPlot.tzDate(new Date(ts * 1e3));
         let btn = document.getElementById("cex");
         let prevBtn = document.getElementById("prev");
         let nextBtn = document.getElementById("next");
-        let exc = ["FTX", "Binance"];
+        let exc = ["Binance"];
         let oi_cell = document.getElementById("oi");
         let vol_cell = document.getElementById("vol");
+        let filter = document.getElementById("filter");
+        filter.checked = true;
 
         const prepareChartOpts = (title, symbols, poi, alpha) => {
             return {
@@ -85,7 +89,7 @@
             }
         }
 
-        function addData(data) {
+        function addData(data, poi_filter = true) {
             response = data;
             let symbols = response["assets"];
             let oi_data = response["oi"];
@@ -94,7 +98,7 @@
             for (let i = 1; i < oi_data.length; i++) {
                 let oi_rank = oi_data[i][oi_data[i].length - 1];
                 let vol_rank = vol_data[i][vol_data[i].length - 1];
-                if ((oi_rank > symbols.length - TOP_N) && (vol_rank > symbols.length - TOP_N)) {
+                if (poi_filter && (oi_rank > symbols.length - TOP_N) && (vol_rank > symbols.length - TOP_N)) {
                     poi.push(symbols[i - 1]);
                 }
             }
@@ -155,6 +159,10 @@
         nextBtn.onclick = () => {
             date.setDate(date.getDate() + 1);
             getDataLoop();
+        };
+
+        filter.onchange = () => {
+            addData(response, filter.checked);
         };
     </script>
 </body>

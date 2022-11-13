@@ -18,20 +18,6 @@ def get_ordered(oi_vol_24h, vol_24h):
     return oi_vol_24h, vol_24h
 
 
-def get_ftx_info():
-    oi_vol_24h, vol_24h = [], []
-    futures = requests.get("https://ftx.com/api/futures").json()
-
-    for info in futures["result"]:
-        asset = info["underlying"]
-        if asset.endswith("USDT") or not info["perpetual"] or info["expired"] or info["volume"] == 0:
-            continue
-        oi_vol_24h.append((asset, round(info["openInterest"] / info["volume"], 2)))
-        vol_24h.append((asset, round(info["volumeUsd24h"], 0)))
-
-    return oi_vol_24h, vol_24h
-
-
 def get_binance_info():
     oi_vol_24h, vol_24h = [], []
     resp = requests.post("https://be.laevitas.ch/graphql", json={
@@ -50,7 +36,6 @@ def get_binance_info():
 
 providers = {
     "Binance": get_binance_info,
-    "FTX": get_ftx_info,
 }
 
 
